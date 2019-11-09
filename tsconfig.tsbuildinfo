@@ -166,7 +166,7 @@
         "signature": "e758d8a47c629a8fdaafa97cf745e5d061015d01168d20308140edf96289b1e8"
       },
       "./src/trans-new.ts": {
-        "version": "60bd4b32ceaf1976218a4e9d4d6ca909c13701cbf664c0b3e26bc3db8c6c5f9e",
+        "version": "c6032f262e24eec2e47fd0ed5c074eec5110912f93ff7517d4c4a9d147ffa11a",
         "signature": "18c27330a1865f2d1c4e674c2e8e7ddb5c01b014965c0d8497ae034d78ef0a72"
       },
       "./src/index.ts": {
