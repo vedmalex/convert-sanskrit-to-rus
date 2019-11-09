@@ -1,7 +1,8 @@
 // анализ санскрита
 // http://sanskrit.uohyd.ac.in/scl/
 // http://sanskrit.inria.fr/
-import { max, orderBy } from 'lodash';
+import { /* max, */ orderBy } from 'lodash';
+// import replace from 'preserve-case'
 
 import { detectSize } from './verse-sizes';
 
@@ -12,6 +13,7 @@ export const transliterations = {
     default: false,
     input: true,
     output: true,
+    caseSensitive: true,
   },
   Gaura: {
     title: 'Gaura Font',
@@ -19,6 +21,7 @@ export const transliterations = {
     default: false,
     input: true,
     output: true,
+    caseSensitive: false,
   },
   html: {
     title: 'HTML код',
@@ -26,6 +29,7 @@ export const transliterations = {
     default: false,
     input: true,
     output: true,
+    caseSensitive: false,
   },
   Unicode: {
     title: 'Юникод',
@@ -33,6 +37,7 @@ export const transliterations = {
     default: false,
     input: true,
     output: true,
+    caseSensitive: false,
   },
   deva: {
     title: 'devanagari',
@@ -40,14 +45,19 @@ export const transliterations = {
     default: false,
     input: false,
     output: false,
+    caseSensitive: false,
   },
-  IAST: { title: 'IAST', index: 5, default: false, input: true, output: true },
+  IAST: {
+    title: 'IAST', index: 5, default: false, input: true, output: true,
+    caseSensitive: false,
+  },
   ISO15919: {
     title: 'ISO15919',
     index: 6,
     default: false,
     input: true,
     output: true,
+    caseSensitive: false,
   },
   HK: {
     title: 'Harvard Kyoto',
@@ -55,6 +65,7 @@ export const transliterations = {
     default: false,
     input: true,
     output: true,
+    caseSensitive: true,
   },
   ITRANS: {
     title: 'ITRANS',
@@ -62,6 +73,7 @@ export const transliterations = {
     default: false,
     input: true,
     output: true,
+    caseSensitive: true,
   },
   Veltuis: {
     title: 'Veltuis',
@@ -69,16 +81,32 @@ export const transliterations = {
     default: false,
     input: true,
     output: true,
+    caseSensitive: true,
   },
-  SLP1: { title: 'SLP1', index: 10, default: false, input: true, output: true },
-  WX: { title: 'WX', index: 11, default: false, input: true, output: true },
+  SLP1: {
+    title: 'SLP1', index: 10, default: false, input: true, output: true,
+    caseSensitive: true,
+  },
+  WX: {
+    title: 'WX', index: 11, default: false, input: true, output: true,
+    caseSensitive: true,
+  },
   long: {
     title: 'Длительность',
     index: 12,
     default: false,
     input: false,
     output: false,
+    caseSensitive: false,
   },
+  vedabase: {
+    title: 'ScaGaudy',
+    index: 13,
+    default: true,
+    input: true,
+    output: false,
+    caseSensitive: false,
+  }
 };
 
 export const sources = {
@@ -95,6 +123,7 @@ export const sources = {
   SLP1: 10,
   WX: 11,
   long: 12,
+  vedabase: 13,
 };
 
 export const sourcesNames = Object.keys(sources);
@@ -102,7 +131,7 @@ export const sourcesNames = Object.keys(sources);
 //как работать с - для разделения на слоги общих слов
 
 export const vowels = [
-  ['а', 'а', 'а', 'а', 'अ', 'a', 'a', 'a', 'a', 'a', 'a', 'a', '.'],
+  ['а', 'а', 'а', 'а', 'अ', 'a', 'a', 'a', 'a', 'a', 'a', 'a', '.', 'a'],
   [
     'А',
     '',
@@ -117,8 +146,9 @@ export const vowels = [
     'A',
     'A',
     '-',
+    'ä'
   ],
-  ['и', 'и', 'и', 'и', 'इ', 'i', 'i', 'i', 'i', 'i', 'i', 'i', '.'],
+  ['и', 'и', 'и', 'и', 'इ', 'i', 'i', 'i', 'i', 'i', 'i', 'i', '.', 'i'],
   [
     'И',
     'ӣ',
@@ -133,8 +163,9 @@ export const vowels = [
     'I',
     'I',
     '-',
+    'é',
   ],
-  ['у', 'у', 'у', 'у', 'उ', 'u', 'u', 'u', 'u', 'u', 'u', 'u', '.'],
+  ['у', 'у', 'у', 'у', 'उ', 'u', 'u', 'u', 'u', 'u', 'u', 'u', '.', 'u'],
   [
     'У',
     'ӯ',
@@ -149,6 +180,7 @@ export const vowels = [
     'U',
     'U',
     '-',
+    'ü',
   ],
   // в начале слова на русском е читается как э
   [
@@ -165,11 +197,12 @@ export const vowels = [
     [' e', '^e'],
     [' e', '^e'],
     '-',
+    [' e', '^e'],
   ],
-  ['е', 'е', 'е', 'е', 'ए', 'e', 'ē', 'e', 'e', 'e', 'e', 'e', '-'],
-  ['аи', 'аи', 'аи', 'аи', 'ऐ', 'ai', 'ai', 'ai', 'ai', 'ai', 'E', 'E', '-'],
-  ['о', 'о', 'о', 'о', 'ओ', 'o', 'ō', 'o', 'o', 'o', 'o', 'o', '-'],
-  ['ау', 'ау', 'ау', 'ау', 'औ', 'au', 'au', 'au', 'au', 'au', 'O', 'O', '-'],
+  ['е', 'е', 'е', 'е', 'ए', 'e', 'ē', 'e', 'e', 'e', 'e', 'e', '-', 'e'],
+  ['аи', 'аи', 'аи', 'аи', 'ऐ', 'ai', 'ai', 'ai', 'ai', 'ai', 'E', 'E', '-', 'ai'],
+  ['о', 'о', 'о', 'о', 'ओ', 'o', 'ō', 'o', 'o', 'o', 'o', 'o', '-', 'o'],
+  ['ау', 'ау', 'ау', 'ау', 'औ', 'au', 'au', 'au', 'au', 'au', 'O', 'O', '-', 'au'],
   [
     'Р',
     '',
@@ -184,6 +217,7 @@ export const vowels = [
     'f',
     'q',
     '.',
+    'å',
   ],
   [
     'РР',
@@ -199,6 +233,7 @@ export const vowels = [
     'F',
     'Q',
     '-',
+    'è'
   ],
   [
     'лР',
@@ -214,6 +249,7 @@ export const vowels = [
     'x',
     'L',
     '.',
+    'ÿ',
   ],
   [
     'лРР',
@@ -229,6 +265,7 @@ export const vowels = [
     'X',
     'LY',
     '-',
+    'ÿ'
   ],
 ];
 
@@ -247,10 +284,11 @@ export const soundless = [
     'M',
     'M',
     '||',
+    'à'
   ],
-  ['Х', '', 'х&#803;', 'х̣', 'अः', 'ḥ', 'ḥ', 'H', 'H', '.h', 'H', 'H', '||'],
+  ['Х', '', 'х&#803;', 'х̣', 'अः', 'ḥ', 'ḥ', 'H', 'H', '.h', 'H', 'H', '||', 'ù'],
   // do not have such symbols in Veltuis, HK, IAST -- replaced from M
-  ['.Н', '', 'м&#784;', 'м̐', 'अँ', 'ṁ', 'm̐', 'М', '.N', '.m', '~', 'az', '||'],
+  ['.Н', '', 'м&#784;', 'м̐', 'अँ', 'ṁ', 'm̐', 'М', '.N', '.m', '~', 'az', '||', ''],
   // не учитывается в слогах
   [
     ["'", '’', '‘'],
@@ -266,18 +304,19 @@ export const soundless = [
     ["'", '’', '‘'],
     'Z',
     '',
+    ['’', "'"]
   ],
 ];
 
 export const consonants = [
-  ['к', 'к', 'к', 'к', 'क', 'k', 'k', 'k', 'k', 'k', 'k', 'k', '|'],
-  ['кх', 'кх', 'кх', 'кх', 'ख', 'kh', 'kh', 'kh', 'kh', 'kh', 'K', 'K', '|'],
-  ['г', 'г', 'г', 'г', 'ग', 'g', 'g', 'g', 'g', 'g', 'g', 'g', '|'],
-  ['гх', 'гх', 'гх', 'гх', 'घ', 'gh', 'gh', 'gh', 'gh', 'gh', 'G', 'G', '|'],
-  ['Г', '', 'н&#775;', 'н̇', 'ङ', 'ṅ', 'ṅ', 'G', '~N', '"n', 'N', 'f', '|'],
-  ['ч', 'ч', 'ч', 'ч', 'च', 'c', 'c', 'c', 'ch', 'c', 'c', 'c', '|'],
-  ['чх', 'чх', 'чх', 'чх', 'छ', 'ch', 'ch', 'ch', 'Ch', 'ch', 'C', 'C', '|'],
-  ['дж', 'дж', 'дж', 'дж', 'ज', 'j', 'j', 'j', 'j', 'j', 'j', 'j', '|'],
+  ['к', 'к', 'к', 'к', 'क', 'k', 'k', 'k', 'k', 'k', 'k', 'k', '|', 'k'],
+  ['кх', 'кх', 'кх', 'кх', 'ख', 'kh', 'kh', 'kh', 'kh', 'kh', 'K', 'K', '|', 'kh'],
+  ['г', 'г', 'г', 'г', 'ग', 'g', 'g', 'g', 'g', 'g', 'g', 'g', '|', 'g'],
+  ['гх', 'гх', 'гх', 'гх', 'घ', 'gh', 'gh', 'gh', 'gh', 'gh', 'G', 'G', '|', 'gh'],
+  ['Г', '', 'н&#775;', 'н̇', 'ङ', 'ṅ', 'ṅ', 'G', '~N', '"n', 'N', 'f', '|', 'ì'],
+  ['ч', 'ч', 'ч', 'ч', 'च', 'c', 'c', 'c', 'ch', 'c', 'c', 'c', '|', 'c'],
+  ['чх', 'чх', 'чх', 'чх', 'छ', 'ch', 'ch', 'ch', 'Ch', 'ch', 'C', 'C', '|', 'ch'],
+  ['дж', 'дж', 'дж', 'дж', 'ज', 'j', 'j', 'j', 'j', 'j', 'j', 'j', '|', 'j'],
   [
     'джх',
     'джх',
@@ -292,9 +331,10 @@ export const consonants = [
     'J',
     'J',
     '|',
+    'jh',
   ],
-  ['~Н', '', 'н&#771;', 'н̃', 'ञ', 'ñ', 'ñ', 'J', '~n', '~n', 'Y', 'F', '|'],
-  ['Т', '', 'т&#803;', 'т̣', 'ट', 'ṭ', 'ṭ', 'T', 'T', '.t', 'w', 't', '|'],
+  ['~Н', '', 'н&#771;', 'н̃', 'ञ', 'ñ', 'ñ', 'J', '~n', '~n', 'Y', 'F', '|', 'ï'],
+  ['Т', '', 'т&#803;', 'т̣', 'ट', 'ṭ', 'ṭ', 'T', 'T', '.t', 'w', 't', '|', 'ö'],
   [
     'Тх',
     'х',
@@ -309,8 +349,9 @@ export const consonants = [
     'W',
     'T',
     '|',
+    'öh',
   ],
-  ['Д', '', 'д&#803;', 'д̣', 'ड', 'ḍ', 'ḍ', 'D', 'D', '.d', 'q', 'd', '|'],
+  ['Д', '', 'д&#803;', 'д̣', 'ड', 'ḍ', 'ḍ', 'D', 'D', '.d', 'q', 'd', '|', 'ò'],
   [
     'Дх',
     'х',
@@ -325,18 +366,19 @@ export const consonants = [
     'Q',
     'D',
     '|',
+    'òh'
   ],
-  ['Н', '', 'н&#803;', 'н̣', 'ण', 'ṇ', 'ṇ', 'N', 'N', '.n', 'R', 'N', '|'],
-  ['т', 'т', 'т', 'т', 'त', 't', 't', 't', 't', 't', 't', 'w', '|'],
-  ['тх', 'тх', 'тх', 'тх', 'थ', 'th', 'th', 'th', 'th', 'th', 'T', 'W', '|'],
-  ['д', 'д', 'д', 'д', 'द', 'd', 'd', 'd', 'd', 'd', 'd', 'x', '|'],
-  ['дх', 'дх', 'дх', 'дх', 'ध', 'dh', 'dh', 'dh', 'dh', 'dh', 'D', 'X', '|'],
-  ['н', 'н', 'н', 'н', 'न', 'n', 'n', 'n', 'n', 'n', 'n', 'n', '|'],
-  ['п', 'п', 'п', 'п', 'प', 'p', 'p', 'p', 'p', 'p', 'p', 'p', '|'],
-  ['пх', 'пх', 'пх', 'пх', 'फ', 'ph', 'ph', 'ph', 'ph', 'ph', 'P', 'P', '|'],
-  ['б', 'б', 'б', 'б', 'ब', 'b', 'b', 'b', 'b', 'b', 'b', 'b', '|'],
-  ['бх', 'бх', 'бх', 'бх', 'भ', 'bh', 'bh', 'bh', 'bh', 'bh', 'B', 'B', '|'],
-  ['м', 'м', 'м', 'м', 'म', 'm', 'm', 'm', 'm', 'm', 'm', 'm', '|'],
+  ['Н', '', 'н&#803;', 'н̣', 'ण', 'ṇ', 'ṇ', 'N', 'N', '.n', 'R', 'N', '|', 'ë'],
+  ['т', 'т', 'т', 'т', 'त', 't', 't', 't', 't', 't', 't', 'w', '|', 't'],
+  ['тх', 'тх', 'тх', 'тх', 'थ', 'th', 'th', 'th', 'th', 'th', 'T', 'W', '|', 'th'],
+  ['д', 'д', 'д', 'д', 'द', 'd', 'd', 'd', 'd', 'd', 'd', 'x', '|', 'd'],
+  ['дх', 'дх', 'дх', 'дх', 'ध', 'dh', 'dh', 'dh', 'dh', 'dh', 'D', 'X', '|', 'dh'],
+  ['н', 'н', 'н', 'н', 'न', 'n', 'n', 'n', 'n', 'n', 'n', 'n', '|', 'n'],
+  ['п', 'п', 'п', 'п', 'प', 'p', 'p', 'p', 'p', 'p', 'p', 'p', '|', 'p'],
+  ['пх', 'пх', 'пх', 'пх', 'फ', 'ph', 'ph', 'ph', 'ph', 'ph', 'P', 'P', '|', 'ph'],
+  ['б', 'б', 'б', 'б', 'ब', 'b', 'b', 'b', 'b', 'b', 'b', 'b', '|', 'b'],
+  ['бх', 'бх', 'бх', 'бх', 'भ', 'bh', 'bh', 'bh', 'bh', 'bh', 'B', 'B', '|', 'bh'],
+  ['м', 'м', 'м', 'м', 'म', 'm', 'm', 'm', 'm', 'm', 'm', 'm', '|', 'm'],
   [
     ['й', 'й'],
     ['й', 'й'],
@@ -351,10 +393,11 @@ export const consonants = [
     'y',
     'y',
     '|',
+    'y'
   ],
-  ['р', 'р', 'р', 'р', 'र', 'r', 'r', 'r', 'r', 'r', 'r', 'r', '|'],
-  ['л', 'л', 'л', 'л', 'ल', 'l', 'l', 'l', 'l', 'l', 'l', 'l', '|'],
-  ['в', 'в', 'в', 'в', 'व', 'v', 'v', 'v', ['v', 'w'], 'v', 'v', 'v', '|'],
+  ['р', 'р', 'р', 'р', 'र', 'r', 'r', 'r', 'r', 'r', 'r', 'r', '|', 'r'],
+  ['л', 'л', 'л', 'л', 'ल', 'l', 'l', 'l', 'l', 'l', 'l', 'l', '|', 'l'],
+  ['в', 'в', 'в', 'в', 'व', 'v', 'v', 'v', ['v', 'w'], 'v', 'v', 'v', '|', 'v'],
   [
     'Ш',
     ['', ''],
@@ -369,10 +412,11 @@ export const consonants = [
     'S',
     'S',
     '|',
+    'ç',
   ],
-  ['ш', 'ш', 'ш', 'ш', 'ष', 'ṣ', 'ṣ', 'S', 'Sh', '.s', 'z', 'R', '|'],
-  ['с', 'с', 'с', 'с', 'स', 's', 's', 's', 's', 's', 's', 's', '|'],
-  ['х', 'х', 'х', 'х', 'ह', 'h', 'h', 'h', 'h', 'h', 'h', 'h', '|'],
+  ['ш', 'ш', 'ш', 'ш', 'ष', 'ṣ', 'ṣ', 'S', 'Sh', '.s', 'z', 'R', '|', 'ñ'],
+  ['с', 'с', 'с', 'с', 'स', 's', 's', 's', 's', 's', 's', 's', '|', 's'],
+  ['х', 'х', 'х', 'х', 'ह', 'h', 'h', 'h', 'h', 'h', 'h', 'h', '|', 'h'],
 ];
 
 /// всегда двойные
@@ -391,6 +435,7 @@ export const irregular = [
     'kz',
     'kR',
     '||',
+    'kñ'
   ],
   [
     'тр',
@@ -406,6 +451,7 @@ export const irregular = [
     'tr',
     'wr',
     '||',
+    'tr'
   ],
   [
     'дж~Н',
@@ -421,6 +467,7 @@ export const irregular = [
     'jY',
     'jF',
     '||',
+    'jï'
   ],
   [
     'Шр',
@@ -436,6 +483,7 @@ export const irregular = [
     'Sr',
     'Sr',
     '||',
+    'çr'
   ],
 ];
 
@@ -446,6 +494,44 @@ export const translationTable = [
   ...soundless,
 ];
 
+// export const universal1 = mapTable => (
+//   _from: number | number[] = [0],
+//   _to = 1,
+// ) => {
+//   if (!Array.isArray(_from)) _from = [_from];
+//   const from = _from.map(f => (typeof f === 'string' ? sources[f] : f));
+//   const to = typeof _to === 'string' ? sources[_to] : _to;
+//   return orderBy(
+//     mapTable.map(line => {
+//       const size = max(
+//         from.map(f =>
+//           Array.isArray(line[f])
+//             ? max(line[f].map(i => i.length))
+//             : line[f].length,
+//         ),
+//       );
+
+//       let result = [
+//         new RegExp(
+//           from
+//             .map(f =>
+//               Array.isArray(line[f])
+//                 ? line[f].map(i => i.replace(/\./g, '\\.')).join('|')
+//                 : line[f].replace(/\./g, '\\.'),
+//             )
+//             .join('|'),
+//           'g',
+//         ),
+//         Array.isArray(line[to]) ? line[to][0] : line[to],
+//         size,
+//       ];
+//       return result;
+//     }),
+//     ['2'],
+//     ['desc'],
+//   );
+// };
+
 export const universal = mapTable => (
   _from: number | number[] = [0],
   _to = 1,
@@ -454,31 +540,31 @@ export const universal = mapTable => (
   const from = _from.map(f => (typeof f === 'string' ? sources[f] : f));
   const to = typeof _to === 'string' ? sources[_to] : _to;
   return orderBy(
-    mapTable.map(line => {
-      const size = max(
-        from.map(f =>
-          Array.isArray(line[f])
-            ? max(line[f].map(i => i.length))
-            : line[f].length,
-        ),
-      );
-
-      let result = [
-        new RegExp(
-          from
-            .map(f =>
-              Array.isArray(line[f])
-                ? line[f].map(i => i.replace(/\./g, '\\.')).join('|')
-                : line[f].replace(/\./g, '\\.'),
-            )
-            .join('|'),
-          'g',
-        ),
+    mapTable.reduce((res, line) => {
+      const search = from
+        .reduce((result, f) => {
+          const caseSensitive = transliterations[sourcesNames[f]].caseSensitive;
+          const res = [];
+          if (Array.isArray(line[f])) {
+            res.push(...line[f].map(i => i.replace(/\./g, '\\.')));
+          } else {
+            res.push(line[f].replace(/\./g, '\\.'))
+          }
+          result.push(...res.map(str => ({
+            str,
+            preserveCase: !caseSensitive
+          })))
+          return result;
+        }, []).filter(x => x.str);
+      res.push(...search.map(s => ([
+        s.str,
         Array.isArray(line[to]) ? line[to][0] : line[to],
-        size,
-      ];
-      return result;
-    }),
+        s.str.length,
+        s.preserveCase,
+      ])))
+
+      return res;
+    }, []),
     ['2'],
     ['desc'],
   );
@@ -488,13 +574,38 @@ export const mapperAll = universal(translationTable);
 
 export const mapperVowels = universal(vowels);
 
-function replacerBase(_text, replacer) {
+// export function replacerBase1(_text, replacer) {
+//   /** для буквы э в начале слова нужен пробел */
+//   let text = _text.replace(/^(.)/, ' $1');
+//   /** а так же ставим пробелы в начале каждой строки */
+//   text = text.replace(/\n/g, '\n ');
+//   let result = replacer.reduce((text, sym) => {
+//     const res = text.replace.apply(text, [sym[0], sym[1]]);
+//     return res;
+//   }, text);
+//   return result;
+// }
+
+export function replacerBase(_text, replacer) {
   /** для буквы э в начале слова нужен пробел */
   let text = _text.replace(/^(.)/, ' $1');
   /** а так же ставим пробелы в начале каждой строки */
   text = text.replace(/\n/g, '\n ');
   let result = replacer.reduce((text, sym) => {
-    const res = text.replace.apply(text, [sym[0], sym[1]]);
+    let res;
+    if (sym[3]) {
+      res = text.replace(new RegExp(sym[0], 'ig'), function (match) {
+        const lower = match.toLowerCase();
+        if (match[0] === lower[0]) {
+          return sym[1];
+        } else {
+          return sym[1][0].toUpperCase() + sym[1].slice(1);
+        }
+      });
+    } else {
+      res = text.replace.apply(text, [new RegExp(sym[0], 'g'), sym[1]]);
+    }
+    // const res = replace(text, sym[0], sym[1]);
     return res;
   }, text);
   return result;
@@ -573,3 +684,27 @@ export const verseSize = replacer => text => {
 // ищем гласные буквы и красим в соответствии с полученным паттерном
 
 //
+
+
+// function translateCaseSensitive(text, fromAlphabet, toAlphabet) {
+//   var fromAlphabet = fromAlphabet.toLowerCase(),
+//     toAlphabet = toAlphabet.toLowerCase(),
+//     re = new RegExp("[" + fromAlphabet + "]", "gi");
+
+//   return text.replace(re, function (char) {
+//     var charLower = char.toLowerCase(),
+//       idx = fromAlphabet.indexOf(charLower);
+
+//     if (idx > -1) {
+//       if (char === charLower) {
+//         return toAlphabet[idx];
+//       } else {
+//         return toAlphabet[idx].toUpperCase();
+//       }
+//     } else {
+//       return char;
+//     }
+//   });
+// };
+
+
