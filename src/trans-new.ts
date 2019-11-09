@@ -2,7 +2,6 @@
 // http://sanskrit.uohyd.ac.in/scl/
 // http://sanskrit.inria.fr/
 import { /* max, */ orderBy } from 'lodash';
-// import replace from 'preserve-case'
 
 import { detectSize } from './verse-sizes';
 
