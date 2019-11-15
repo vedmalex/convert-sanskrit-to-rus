@@ -828,7 +828,10 @@ function replacerColorizer(_text, replacer) {
   /** а так же ставим пробелы в начале каждой строки */
   text = text.replace(/\n/g, '\n ');
   let result = replacer.reduce((text, sym) => {
-    const res = text.replace(sym[0], '(.*)');
+    const res = text.replace(
+      new RegExp(sym[0], `g${sym[3] ? 'i' : ''}`),
+      '(.*)',
+    );
     return res;
   }, text);
   return result;
