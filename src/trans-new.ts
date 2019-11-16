@@ -805,12 +805,18 @@ export function replacerBase(_text, replacer) {
   let result = replacer.reduce((text, sym) => {
     let res;
     if (sym[3]) {
-      res = text.replace(new RegExp(sym[0], 'ig'), function(match) {
+      res = text.replace(new RegExp(sym[0], 'ig'), function (match) {
         const lower = match.toLowerCase();
-        if (match[0] === lower[0]) {
+        if (match === lower) {
           return sym[1];
         } else {
-          return sym[1][0].toUpperCase() + sym[1].slice(1);
+          return sym[1].split('').map((c, i) => {
+            if (match[i] !== lower[i]) {
+              return c.toUpperCase()
+            } else {
+              return c;
+            }
+          }).join('');
         }
       });
     } else {
