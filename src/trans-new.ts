@@ -145,7 +145,7 @@ export const vowels = [
   ['а', 'а', 'а', 'а', 'अ', 'a', 'a', 'a', 'a', 'a', 'a', 'a', '.', 'a'],
   [
     'А',
-    '',
+    ['', ''],
     'а&#772;',
     'а̄',
     'आ',
@@ -805,18 +805,21 @@ export function replacerBase(_text, replacer) {
   let result = replacer.reduce((text, sym) => {
     let res;
     if (sym[3]) {
-      res = text.replace(new RegExp(sym[0], 'ig'), function (match) {
+      res = text.replace(new RegExp(sym[0], 'ig'), function(match) {
         const lower = match.toLowerCase();
         if (match === lower) {
           return sym[1];
         } else {
-          return sym[1].split('').map((c, i) => {
-            if (match[i] !== lower[i]) {
-              return c.toUpperCase()
-            } else {
-              return c;
-            }
-          }).join('');
+          return sym[1]
+            .split('')
+            .map((c, i) => {
+              if (match[i] !== lower[i]) {
+                return c.toUpperCase();
+              } else {
+                return c;
+              }
+            })
+            .join('');
         }
       });
     } else {
