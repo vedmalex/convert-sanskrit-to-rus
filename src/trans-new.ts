@@ -792,7 +792,7 @@ export const irregular = [
     'jY',
     'jF',
     '||',
-    'jï',
+    ['jï', 'jṣ'],
     'джн',
   ],
   [
@@ -918,15 +918,25 @@ export const mapperVowels = universal(vowels);
 //   return result;
 // }
 
-export function replacerBase(_text, replacer) {
+export function replacerBase(_text: string, replacer) {
   /** для буквы э в начале слова нужен пробел */
   let text = _text.replace(/^(.)/, ' $1');
   /** а так же ставим пробелы в начале каждой строки */
   text = text.replace(/\n/g, '\n ');
-  let result = replacer.reduce((text, sym) => {
+  const map = [];
+  let result = replacer.reduce((text: string, sym) => {
     let res;
     if (sym[3]) {
-      res = text.replace(new RegExp(sym[0], 'ig'), function(match) {
+      res = text.replace(new RegExp(sym[0], 'ig'), function (match, offset) {
+        let i = offset;
+        while (i <= offset + match.length) {
+          if (!map[i]) {
+            map[i] = true;
+            i += 1;
+          } else {
+            return match;
+          }
+        }
         const lower = match.toLowerCase();
         if (match === lower) {
           return sym[1];
