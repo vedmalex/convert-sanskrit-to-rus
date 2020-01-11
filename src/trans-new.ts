@@ -923,20 +923,19 @@ export function replacerBase(_text: string, replacer) {
   let text = _text.replace(/^(.)/, ' $1');
   /** а так же ставим пробелы в начале каждой строки */
   text = text.replace(/\n/g, '\n ');
-  const map = [];
+  const map = [...text].map(_ => false);
   let result = replacer.reduce((text: string, sym) => {
     let res;
     if (sym[3]) {
+      // в каждый шаг должен быть свой diff -- есть библиотека для работы с diff на firebase адаптере
       res = text.replace(new RegExp(sym[0], 'ig'), function (match, offset) {
         let i = offset;
-        while (i <= offset + match.length) {
-          if (!map[i]) {
-            map[i] = true;
-            i += 1;
-          } else {
-            return match;
-          }
+        if (!map[i]) {
+          map.splice(offset, sym[0].length, ...[...sym[1]].map(_ => true))
+        } else {
+          return match;
         }
+
         const lower = match.toLowerCase();
         if (match === lower) {
           return sym[1];
