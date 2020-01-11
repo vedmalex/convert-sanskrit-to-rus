@@ -919,7 +919,6 @@ export const mapperVowels = universal(vowels);
 // }
 
 export function replacerBase(_text: string, replacer) {
-  debugger
   /** для буквы э в начале слова нужен пробел */
   let text = _text.replace(/^(.)/, ' $1');
   /** а так же ставим пробелы в начале каждой строки */
