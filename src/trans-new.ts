@@ -792,7 +792,7 @@ export const irregular = [
     'jY',
     'jF',
     '||',
-    ['jï', 'jṣ'],
+    'jï',
     'джн',
   ],
   [
@@ -926,7 +926,7 @@ export function replacerBase(_text: string, replacer) {
   text = text.replace(/\n/g, '\n ');
   let map = [...text].map(_ => false);
   let result = replacer.reduce((rText: string, sym) => {
-    let nextmap = [...map].map(_ => false);
+    let nextmap = [...map];
     let res: string;
     if (sym[3]) {
       // в каждый шаг должен быть свой diff -- есть библиотека для работы с diff на firebase адаптере
