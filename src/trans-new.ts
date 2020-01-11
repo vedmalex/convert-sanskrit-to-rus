@@ -895,7 +895,7 @@ export const universal = mapTable => (
         ]),
       );
 
-      return res;
+      return res.filter(s => s[0] != s[1]);
     }, []),
     ['2'],
     ['desc'],
@@ -919,20 +919,26 @@ export const mapperVowels = universal(vowels);
 // }
 
 export function replacerBase(_text: string, replacer) {
+  debugger
   /** для буквы э в начале слова нужен пробел */
   let text = _text.replace(/^(.)/, ' $1');
   /** а так же ставим пробелы в начале каждой строки */
   text = text.replace(/\n/g, '\n ');
-  const map = [...text].map(_ => false);
-  let result = replacer.reduce((text: string, sym) => {
-    let res;
+  let map = [...text].map(_ => false);
+  let result = replacer.reduce((rText: string, sym) => {
+    let nextmap = [...map].map(_ => false);
+    let res: string;
     if (sym[3]) {
       // в каждый шаг должен быть свой diff -- есть библиотека для работы с diff на firebase адаптере
-      res = text.replace(new RegExp(sym[0], 'ig'), function (match, offset) {
-        let i = offset;
-        if (!map[i]) {
-          map.splice(offset, sym[0].length, ...[...sym[1]].map(_ => true))
+      // console.log(sym[0], sym[1])
+
+      res = rText.replace(new RegExp(sym[0], 'ig'), function (match, offset, _) {
+        // console.log(text === _)
+        if (!map[offset]) {
+          // заменяем в новой карте, но с новым смещением...
+          nextmap.splice(offset + nextmap.length - map.length, sym[0].length, ...[...sym[1]].map(_ => true))
         } else {
+          // console.log(match, offset, !map[i], [...text].slice(offset, match.length))
           return match;
         }
 
@@ -952,10 +958,12 @@ export function replacerBase(_text: string, replacer) {
             .join('');
         }
       });
+      // console.log(res === rText)
     } else {
-      res = text.replace.apply(text, [new RegExp(sym[0], 'g'), sym[1]]);
+      res = rText.replace.apply(rText, [new RegExp(sym[0], 'g'), sym[1]]);
     }
     // const res = replace(text, sym[0], sym[1]);
+    map = nextmap
     return res;
   }, text);
   return result;
