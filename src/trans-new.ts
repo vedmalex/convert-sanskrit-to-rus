@@ -146,11 +146,14 @@ export const sources = {
   flat: 14,
 };
 
-export const sourcesNames = Object.keys(sources);
+export const sourcesNames: Array<keyof typeof sources> = Object.keys(
+  sources,
+) as Array<keyof typeof sources>;
+
 //посмотреть как переводить в деванагари
 //как работать с - для разделения на слоги общих слов
 
-export const vowels = [
+export const vowels: Array<Array<string | Array<string>>> = [
   ['а', 'а', 'а', 'а', 'अ', 'a', 'a', 'a', 'a', 'a', 'a', 'a', '.', 'a', 'а'],
   [
     'А',
@@ -174,7 +177,7 @@ export const vowels = [
     'И',
     'ӣ',
     'и&#772;',
-    'ӣ',
+    ['ӣ', 'ӣ'],
     'ई',
     'ī',
     'ī',
@@ -192,7 +195,7 @@ export const vowels = [
     'У',
     'ӯ',
     'у&#772;',
-    'ӯ',
+    ['ӯ', 'ӯ'],
     'ऊ',
     'ū',
     'ū',
@@ -329,7 +332,7 @@ export const vowels = [
   ],
 ];
 
-export const soundless = [
+export const soundless: Array<Array<string | Array<string>>> = [
   [
     'М',
     '',
@@ -402,7 +405,7 @@ export const soundless = [
   ],
 ];
 
-export const consonants = [
+export const consonants: Array<Array<string | Array<string>>> = [
   ['к', 'к', 'к', 'к', 'क', 'k', 'k', 'k', 'k', 'k', 'k', 'k', '|', 'k', 'к'],
   [
     'кх',
@@ -597,7 +600,7 @@ export const consonants = [
     'Н',
     '',
     'н&#803;',
-    'н̣',
+    ['н̣', 'н̣'],
     'ण',
     'ṇ',
     'ṇ',
@@ -743,7 +746,7 @@ export const consonants = [
 ];
 
 /// всегда двойные
-export const irregular = [
+export const irregular: Array<Array<string | Array<string>>> = [
   [
     'кш',
     'кш',
@@ -814,161 +817,126 @@ export const irregular = [
   ],
 ];
 
-export const translationTable = [
+export const translationTable: Array<Array<string | Array<string>>> = [
   ...consonants,
   ...irregular,
   ...vowels,
   ...soundless,
 ];
 
-// export const universal1 = mapTable => (
-//   _from: number | number[] = [0],
-//   _to = 1,
-// ) => {
-//   if (!Array.isArray(_from)) _from = [_from];
-//   const from = _from.map(f => (typeof f === 'string' ? sources[f] : f));
-//   const to = typeof _to === 'string' ? sources[_to] : _to;
-//   return orderBy(
-//     mapTable.map(line => {
-//       const size = max(
-//         from.map(f =>
-//           Array.isArray(line[f])
-//             ? max(line[f].map(i => i.length))
-//             : line[f].length,
-//         ),
-//       );
+export type Replacer = (
+  _from: number | number[],
+  _to: number,
+) => Array<[string, string, number, boolean]>;
 
-//       let result = [
-//         new RegExp(
-//           from
-//             .map(f =>
-//               Array.isArray(line[f])
-//                 ? line[f].map(i => i.replace(/\./g, '\\.')).join('|')
-//                 : line[f].replace(/\./g, '\\.'),
-//             )
-//             .join('|'),
-//           'g',
-//         ),
-//         Array.isArray(line[to]) ? line[to][0] : line[to],
-//         size,
-//       ];
-//       return result;
-//     }),
-//     ['2'],
-//     ['desc'],
-//   );
-// };
+export type ReplacerResult = ReturnType<Replacer>;
 
-export const universal = mapTable => (
-  _from: number | number[] = [0],
-  _to = 1,
-) => {
-  if (!Array.isArray(_from)) _from = [_from];
-  const from = _from.map(f => (typeof f === 'string' ? sources[f] : f));
-  const to = typeof _to === 'string' ? sources[_to] : _to;
-  return orderBy(
-    mapTable.reduce((res, line) => {
+export function universal(
+  mapTable: Array<Array<string | Array<string>>>,
+): Replacer {
+  return function (_from: number | number[] = [0], _to = 1) {
+    if (!Array.isArray(_from)) _from = [_from];
+    const from = _from.map((f) => (typeof f === 'string' ? sources[f] : f));
+    const to = typeof _to === 'string' ? sources[_to] : _to;
+
+    const result = mapTable.reduce((res, line) => {
+      type Result = { str: string; preserveCase: boolean };
+
       const search = from
-        .reduce((result, f) => {
+        .reduce((result: Array<Result>, f) => {
           const caseSensitive = transliterations[sourcesNames[f]].caseSensitive;
           const res = [];
-          if (Array.isArray(line[f])) {
-            res.push(...line[f].map(i => i.replace(/\./g, '\\.')));
+          const current = line[f];
+          if (Array.isArray(current)) {
+            res.push(...current.map((i) => i.replace(/\./g, '\\.')));
           } else {
-            res.push(line[f].replace(/\./g, '\\.'));
+            res.push(current.replace(/\./g, '\\.'));
           }
           result.push(
-            ...res.map(str => ({
+            ...res.map((str) => ({
               str,
               preserveCase: !caseSensitive,
             })),
           );
           return result;
         }, [])
-        .filter(x => x.str);
-      res.push(
-        ...search.map(s => [
-          s.str,
-          Array.isArray(line[to]) ? line[to][0] : line[to],
-          s.str.length,
-          s.preserveCase,
-        ]),
-      );
+        .filter((x) => x.str);
+      search.forEach((s) => {
+        const second: string = Array.isArray(line[to])
+          ? line[to][0]
+          : (line[to] as string);
+        res.push([s.str, second, s.str.length, s.preserveCase]);
+      });
 
-      return res.filter(s => s[0] != s[1]);
-    }, []),
-    ['2'],
-    ['desc'],
-  );
-};
+      return res.filter(([first, second]) => first != second);
+    }, [] as Array<[string, string, number, boolean]>);
+
+    return orderBy(result, ['2'], ['desc']);
+  };
+}
 
 export const mapperAll = universal(translationTable);
 
 export const mapperVowels = universal(vowels);
 
-// export function replacerBase1(_text, replacer) {
-//   /** для буквы э в начале слова нужен пробел */
-//   let text = _text.replace(/^(.)/, ' $1');
-//   /** а так же ставим пробелы в начале каждой строки */
-//   text = text.replace(/\n/g, '\n ');
-//   let result = replacer.reduce((text, sym) => {
-//     const res = text.replace.apply(text, [sym[0], sym[1]]);
-//     return res;
-//   }, text);
-//   return result;
-// }
-
-export function replacerBase(_text: string, replacer) {
+export function replacerBase(_text: string, replacer: ReplacerResult) {
   /** для буквы э в начале слова нужен пробел */
   let text = _text.replace(/^(.)/, ' $1');
   /** а так же ставим пробелы в начале каждой строки */
   text = text.replace(/\n/g, '\n ');
-  let map = [...text].map(_ => false);
-  let result = replacer.reduce((rText: string, sym) => {
+  let map = [...text].map((_) => false);
+  let result = replacer.reduce((rText, sym) => {
     let nextmap = [...map];
     let res: string;
     if (sym[3]) {
       // в каждый шаг должен быть свой diff -- есть библиотека для работы с diff на firebase адаптере
       // console.log(sym[0], sym[1])
 
-      res = rText.replace(new RegExp(sym[0], 'ig'), function (match, offset, _) {
-        // console.log(text === _)
-        if (!map[offset]) {
-          // заменяем в новой карте, но с новым смещением...
-          nextmap.splice(offset + nextmap.length - map.length, sym[0].length, ...[...sym[1]].map(_ => true))
-        } else {
-          // console.log(match, offset, !map[i], [...text].slice(offset, match.length))
-          return match;
-        }
+      res = rText.replace(
+        new RegExp(sym[0], 'ig'),
+        function (match, offset, _) {
+          // console.log(text === _)
+          if (!map[offset]) {
+            // заменяем в новой карте, но с новым смещением...
+            nextmap.splice(
+              offset + nextmap.length - map.length,
+              sym[0].length,
+              ...[...sym[1]].map((_) => true),
+            );
+          } else {
+            // console.log(match, offset, !map[i], [...text].slice(offset, match.length))
+            return match;
+          }
 
-        const lower = match.toLowerCase();
-        if (match === lower) {
-          return sym[1];
-        } else {
-          return sym[1]
-            .split('')
-            .map((c, i) => {
-              if (match[i] !== lower[i]) {
-                return c.toUpperCase();
-              } else {
-                return c;
-              }
-            })
-            .join('');
-        }
-      });
+          const lower = match.toLowerCase();
+          if (match === lower) {
+            return sym[1];
+          } else {
+            return sym[1]
+              .split('')
+              .map((c, i) => {
+                if (match[i] !== lower[i]) {
+                  return c.toUpperCase();
+                } else {
+                  return c;
+                }
+              })
+              .join('');
+          }
+        },
+      );
       // console.log(res === rText)
     } else {
-      res = rText.replace.apply(rText, [new RegExp(sym[0], 'g'), sym[1]]);
+      res = rText.replace(new RegExp(sym[0], 'g'), sym[1]);
     }
     // const res = replace(text, sym[0], sym[1]);
-    map = nextmap
+    map = nextmap;
     return res;
   }, text);
   return result;
 }
 
-function replacerColorizer(_text, replacer) {
+function replacerColorizer(_text: string, replacer: ReplacerResult) {
   /** для буквы э в начале слова нужен пробел */
   let text = _text.replace(/^(.)/, ' $1');
   /** а так же ставим пробелы в начале каждой строки */
@@ -979,66 +947,98 @@ function replacerColorizer(_text, replacer) {
       '(.*)',
     );
     return res;
-  }, text);
+  }, text) as string;
   return result;
 }
 
-export const converter = replacer => text =>
-  replacerBase(text, replacer)
-    .replace(/^ (.)/, '$1')
-    .replace(/\n /g, '\n');
+export const converter =
+  (replacer: Array<[string, string, number, boolean]>) => (text: string) =>
+    replacerBase(text, replacer).replace(/^ (.)/, '$1').replace(/\n /g, '\n');
 
-export const verseColor = replacer => text => {
-  text = text
-    .split('\n')
-    /** заменяем пробелы на подчеркивание */
-    .join('\n');
+export const verseColor =
+  (replacer: Array<[string, string, number, boolean]>) => (text: string) => {
+    text = text
+      .split('\n')
+      /** заменяем пробелы на подчеркивание */
+      .join('\n');
 
-  return replacerColorizer(text, replacer)
-    .replace(/^ (.)/, '$1')
-    .replace(/\n /g, '\n');
+    return replacerColorizer(text, replacer)
+      .replace(/^ (.)/, '$1')
+      .replace(/\n /g, '\n');
+  };
+
+export type VerseSize = {
+  result: Array<Array<string>>;
+  size: Array<{ group: string; mask: string }>;
 };
 
-export const verseSize = replacer => text => {
-  text = text.replace(/-(\n)*/g, '$1');
-  // в строках убрать пробелы тоже
-  text = text
-    .split('\n')
-    /** заменяем пробелы на подчеркивание */
-    .map(s => s.replace(/\s/g, '_'))
-    .map(s => s.replace(/-/g, ''))
+export function verseSizeToString(long: VerseSize): string {
+  return long?.result
+    .map((line, i) => {
+      if (line.length > 0) {
+        return `${(i + 1).toString().padStart(4, ' ')}. ${line.length
+          .toString()
+          .padStart(3, ' ')}: ${line}${long.size[i].group} ${
+          long.size[i].mask
+        }`;
+      } else return '';
+    })
     .join('\n');
-  let result = replacerBase(text, replacer)
-    /** заменяем пробелы наподчеркивание */
-    // .replace(/ /gi, '_')
-    .replace(/(\||\.)_\|/gi, '$1|')
-    /** короткую или длинную гласную перед двумя согласными на один согласный и длинный звук */
-    .replace(/(\.|-)\|\|+/gi, '-|')
-    /** убираем согласные звуки */
-    .replace(/\|+/gi, '')
-    /** заменяем концы строк на спец символ */
-    .replace(/\n/g, 'SUPER')
-    /** удаляем все пробельные символы */
-    .replace(/\s+/gi, '')
-    /**  последний слог в строке всегда длинный */
-    .replace(/\.SUPER/g, '-SUPER')
-    .replace(/\.$/g, '-')
-    /** возвращаем переносы строк */
-    .replace(/SUPER/g, '\n')
-    /** убираем пробельные символы */
-    .replace(/_/gi, '')
-    /** ставим символ короткого звука */
-    .replace(/\./g, 'U')
-    /** ставим длинное тире вместо короткого */
-    .replace(/-/g, '—');
+}
 
-  result = result.split('\n').map(l => l.split(''));
+export const verseSize =
+  (_replacer: Array<[string, string, number, boolean]>) =>
+  (_text: string): VerseSize => {
+    // убираем связки -\n где шлока разделена на несколько строк и обрывается по середине
+    const textContatenated = _text.replace(/-(\n)*/g, '$1');
+    // в строках убрать пробелы тоже
+    const text = textContatenated
+      .split('\n')
+      /** заменяем пробелы на подчеркивание */
+      .map((s) => s.replace(/\s/g, '_'))
+      .map((s) => s.replace(/-/g, ''))
+      .join('\n');
 
-  result = result.map(l => (l.some(s => !(s === '—' || s === 'U')) ? [] : l));
+    const replacer: Array<[string, string, number, boolean]> = [];
+    _replacer.forEach(([str1, str2, pos, preserve]) => {
+      if (str1 !== str1.replace(/\s/g, '_')) {
+        replacer.push([str1.replace(/\s/g, '_'), str2, pos, preserve]);
+      }
+      replacer.push([str1, str2, pos, preserve]);
+    });
 
-  const size = detectSize(result);
-  return { result, size };
-};
+    const replaced = replacerBase(text, replacer)
+      /** заменяем пробелы наподчеркивание */
+      // .replace(/ /gi, '_')
+      .replace(/(\||\.)_\|/gi, '$1|')
+      /** короткую или длинную гласную перед двумя согласными на один согласный и длинный звук */
+      .replace(/(\.|-)\|\|+/gi, '-|')
+      /** убираем согласные звуки */
+      .replace(/\|+/gi, '')
+      /** заменяем концы строк на спец символ */
+      .replace(/\n/g, 'SUPER')
+      /** удаляем все пробельные символы */
+      .replace(/\s+/gi, '')
+      /**  последний слог в строке всегда длинный */
+      .replace(/\.SUPER/g, '-SUPER')
+      .replace(/\.$/g, '-')
+      /** возвращаем переносы строк */
+      .replace(/SUPER/g, '\n')
+      /** убираем пробельные символы */
+      .replace(/_/gi, '')
+      /** ставим символ короткого звука */
+      .replace(/\./g, 'U')
+      /** ставим длинное тире вместо короткого */
+      .replace(/-/g, '—');
+
+    const splited = replaced.split('\n').map((l) => l.split(''));
+    const result = splited.map((l) =>
+      l.some((s) => !(s === '—' || s === 'U')) ? [] : l,
+    );
+
+    const size = detectSize(result);
+    return { result, size };
+  };
 
 // вариант для сопоставления
 // ищем гласные буквы и красим в соответствии с полученным паттерном

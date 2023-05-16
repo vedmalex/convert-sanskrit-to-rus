@@ -9,7 +9,7 @@ const list = {
   WX: 7,
 };
 
-vowels = [
+const vowels = [
   ['अ', 'a', 'a', 'a', 'a', 'a', 'a', 'a'],
   ['आ', 'ā', 'ā', 'A', ['A', 'aa'], 'aa', 'A', 'A'],
   ['इ', 'i', 'i', 'i', 'i', 'i', 'i', 'i'],
@@ -30,7 +30,7 @@ vowels = [
   ['ऽ', "'", '’', "'", '.a', '.a', "'", 'Z'],
 ];
 
-consanants = [
+const consanants = [
   ['क', 'ka', 'ka', 'ka', 'ka', 'ka', 'ka', 'ka'],
   ['ख', 'kha', 'kha', 'kha', 'kha', 'kha', 'Ka', 'Ka'],
   ['ग', 'ga', 'ga', 'ga', 'ga', 'ga', 'ga', 'ga'],

@@ -266,23 +266,22 @@ export const verseSizes = [
   },
 ];
 
-export function detectSize(str) {
+export function detectSize(str: Array<Array<string>>) {
   const transliterate = converter(mapperAll(0, 3));
-  let result = str.map(s => {
-    let candidates = verseSizes.filter(vs =>
+  let result = str.map((s) => {
+    let candidates = verseSizes.filter((vs) =>
       s.length < 27 ? vs.size === s.length : vs.size === 27,
     );
     let mask = transliterate(
       candidates
-        .filter(c => c.mask)
-        .filter(m => m.mask.test(s))
-        .map(r => r.name)
+        .filter((m) => m.mask && m.mask.test(s.join('')))
+        .map((r) => r.name)
         .join(','),
     );
     let group = transliterate(
       candidates
-        .filter(c => !c.mask)
-        .map(n => n.name)
+        .filter((c) => !c.mask)
+        .map((n) => n.name)
         .join(','),
     );
 
